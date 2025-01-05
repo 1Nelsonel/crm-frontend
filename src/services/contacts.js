@@ -17,7 +17,7 @@ export const contactService = {
     await api.delete(`/api/contacts/${id}/`)
   },
   async getLeads() {
-    const response = await api.get('/leads/')
+    const response = await api.get('/api/leads/')
     console.log("Raw API Response:", response.data)
     return Array.isArray(response.data)
       ? response.data.map((lead) => ({
