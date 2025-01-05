@@ -53,6 +53,9 @@ const router = createRouter({
 
 // Navigation guard
 router.beforeEach((to, from, next) => {
+
+  console.log('API URL:', import.meta.env.VITE_API_URL);
+
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {

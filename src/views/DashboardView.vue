@@ -88,10 +88,17 @@ const recentActivity = ref([]);
 
 const fetchDashboardData = async () => {
   try {
-    const response = await fetch('http://localhost:8000/api/dashboard/', {
+    // const response = await fetch('http://localhost:8000/api/dashboard/', {
+    //   headers: {
+    //     Authorization: `Token ${localStorage.getItem('token')}`
+    //   }
+    // });
+
+    const baseURL = import.meta.env.VITE_API_URL;
+    const response = await fetch(`${baseURL}/api/dashboard/`, {
       headers: {
-        Authorization: `Token ${localStorage.getItem('token')}`
-      }
+        Authorization: `Token ${localStorage.getItem('token')}`,
+      },
     });
 
     const data = await response.json();

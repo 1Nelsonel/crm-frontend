@@ -8,11 +8,13 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || null)
 
   const api = axios.create({
-    baseURL: 'http://localhost:8000/api',
+    baseURL: import.meta.env.VITE_API_URL,
     headers: {
       'Content-Type': 'application/json'
     }
   })
+
+
 
   // Add token to requests
   api.interceptors.request.use(config => {
@@ -24,7 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (username, password) => {
     try {
-      const response = await api.post('/login/', { username, password })
+      const response = await api.post('/api/login/', { username, password })
 
       if (!response.data.data || !response.data.data.token || !response.data.data.user) {
         throw new Error('Invalid server response')
@@ -52,7 +54,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const register = async (userData) => {
     try {
-      const response = await api.post('/register/', userData);
+      const response = await api.post('/api/register/', userData);
 
       if (!response.data.data || !response.data.data.token || !response.data.data.user) {
         throw new Error('Invalid response from server');
