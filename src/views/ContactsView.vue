@@ -1,91 +1,156 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <v-app>
     <Navigation />
-    <div
-      v-if="message"
-      :class="`fixed top-4 right-4 px-4 py-2 rounded-md shadow-md ${
-        messageType === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-      }`"
-    >
-      {{ message }}
-    </div>
+    <v-snackbar v-model="snackbar" :color="snackbarType" timeout="3000">
+      {{ snackbarMessage }}
+    </v-snackbar>
 
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <v-container class="py-6">
       <!-- Header -->
-      <div class="px-4 sm:px-0 flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900">Contacts</h1>
-        <button @click="openCreateModal" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+      <v-row align="center" justify="space-between" class="mb-6">
+        <v-col>
+          <h1 class="text-h4 font-weight-bold">Contacts</h1>
+        </v-col>
+        <v-btn color="primary" @click="openCreateModal" prepend-icon="mdi-plus">
           Add Contact
-        </button>
-      </div>
+        </v-btn>
+      </v-row>
 
       <!-- Contacts Table -->
-      <div class="mt-8 bg-white shadow rounded-lg">
-        <div class="p-6">
-          <div v-if="loading" class="text-center py-4">Loading...</div>
-          <table v-else class="min-w-full divide-y divide-gray-200">
+      <v-card>
+        <v-card-text>
+          <v-progress-circular
+            v-if="loading"
+            indeterminate
+            color="primary"
+            class="d-flex mx-auto my-4"
+          />
+
+          <v-table v-else>
             <thead>
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th class="text-left">Name</th>
+                <th class="text-left">Email</th>
+                <th class="text-left">Phone</th>
+                <th class="text-left">Lead</th>
+                <th class="text-left">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody>
               <tr v-for="contact in contacts" :key="contact.id">
-                <td class="px-6 py-4 whitespace-nowrap">{{ contact.name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ contact.email }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ contact.phone }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ contact.lead?.name || 'No Lead' }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                  <button @click="editContact(contact)" class="text-blue-600 hover:text-blue-900 mr-4">Edit</button>
-                  <button @click="deleteContact(contact.id)" class="text-red-600 hover:text-red-900">Delete</button>
+                <td>{{ contact.name }}</td>
+                <td>{{ contact.email }}</td>
+                <td>{{ contact.phone }}</td>
+                <td>{{ contact.lead?.name || 'No Lead' }}</td>
+                <td>
+                  <v-btn
+                    size="small"
+                    color="primary"
+                    variant="text"
+                    class="mr-2"
+                    @click="editContact(contact)"
+                  >
+                    <v-icon>$edit</v-icon>
+                  </v-btn>
+                  <v-btn
+                    size="small"
+                    color="error"
+                    variant="text"
+                    @click="deleteContact(contact.id)"
+                  >
+                    <v-icon>$delete</v-icon>
+                  </v-btn>
                 </td>
               </tr>
             </tbody>
-          </table>
-        </div>
-      </div>
+          </v-table>
+        </v-card-text>
+      </v-card>
 
       <!-- Modal -->
-      <div v-if="showModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full">
-          <h2 class="text-2xl font-bold mb-4">{{ editingContact ? 'Edit Contact' : 'Create Contact' }}</h2>
-          <form @submit.prevent="handleSubmit" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Name</label>
-              <input v-model="formData.name" type="text" required class="mt-1 block w-full rounded-md border border-gray-300 p-2" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Email</label>
-              <input v-model="formData.email" type="email" required class="mt-1 block w-full rounded-md border border-gray-300 p-2" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Phone</label>
-              <input v-model="formData.phone" type="tel" required class="mt-1 block w-full rounded-md border border-gray-300 p-2" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Lead</label>
-              <select v-model="formData.lead_id" class="mt-1 block w-full rounded-md border border-gray-300 p-2">
-                <option value="" disabled>Select Lead</option>
-                <option v-for="lead in leads" :key="lead.id" :value="lead.id">{{ lead.name }}</option>
-              </select>
-            </div>
-            <div class="flex justify-end space-x-4">
-              <button @click="closeModal" type="button" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
-                Cancel
-              </button>
-              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                {{ editingContact ? 'Update' : 'Create' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </main>
-  </div>
+      <v-dialog v-model="showModal" max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">{{ editingContact ? 'Edit Contact' : 'Create Contact' }}</span>
+          </v-card-title>
+
+          <v-card-text>
+            <v-form @submit.prevent="handleSubmit">
+              <v-container>
+                <v-row>
+                  <!-- Name Field -->
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="formData.name"
+                      label="Name"
+                      required
+                      variant="outlined"
+                      density="comfortable"
+                    />
+                  </v-col>
+
+                  <!-- Email Field -->
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="formData.email"
+                      label="Email"
+                      type="email"
+                      required
+                      variant="outlined"
+                      density="comfortable"
+                    />
+                  </v-col>
+
+                  <!-- Phone Field -->
+                  <v-col cols="12">
+                    <v-text-field
+                      v-model="formData.phone"
+                      label="Phone"
+                      type="tel"
+                      required
+                      variant="outlined"
+                      density="comfortable"
+                    />
+                  </v-col>
+
+                  <!-- Lead Field -->
+                  <v-col cols="12">
+                    <v-select
+                      v-model="formData.lead_id"
+                      label="Lead"
+                      :items="leads"
+                      item-text="title"
+                      item-value="value"
+                      variant="outlined"
+                      density="comfortable"
+                    />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-form>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="grey-darken-1"
+              variant="text"
+              @click="closeModal"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="primary"
+              @click="handleSubmit"
+            >
+              {{ editingContact ? 'Update' : 'Create' }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+    </v-container>
+  </v-app>
 </template>
 
 <script setup>
@@ -100,8 +165,10 @@ const loading = ref(true)
 const showModal = ref(false)
 const editingContact = ref(null)
 const formData = ref({ name: '', email: '', phone: '', lead_id: null })
-const message = ref(null) // Message to display in the UI
-const messageType = ref('success') // Type of message to display
+
+const snackbar = ref(false)
+const snackbarMessage = ref('')
+const snackbarType = ref('success')
 
 // Methods
 const fetchContacts = async () => {
@@ -116,6 +183,8 @@ const fetchContacts = async () => {
   }
 }
 
+
+
 const openCreateModal = () => {
   editingContact.value = null
   formData.value = { name: '', email: '', phone: '', lead_id: null }
@@ -128,7 +197,7 @@ const editContact = (contact) => {
     name: contact.name,
     email: contact.email,
     phone: contact.phone,
-    lead_id: contact.lead?.id || null // Map lead's ID for editing
+    lead_id: contact.lead?.id || null,
   }
   showModal.value = true
 }
@@ -141,58 +210,40 @@ const closeModal = () => {
 
 const handleSubmit = async () => {
   try {
-    let response
     if (editingContact.value) {
-      response = await contactService.updateContact(editingContact.value.id, formData.value)
+      await contactService.updateContact(editingContact.value.id, formData.value)
     } else {
-      response = await contactService.createContact(formData.value)
+      await contactService.createContact(formData.value)
     }
-
-    // Extract and display the message
-    message.value = response.message
-    messageType.value = 'success'
-
+    snackbarMessage.value = editingContact.value ? 'Contact updated!' : 'Contact created!'
+    snackbarType.value = 'success'
+    snackbar.value = true
     await fetchContacts()
     closeModal()
   } catch (error) {
-    // Handle errors and display the message
-    if (error.response && error.response.data.message) {
-      message.value = error.response.data.message
-    } else {
-      message.value = 'An error occurred. Please try again.'
-    }
-    messageType.value = 'error'
-
+    snackbarMessage.value = 'An error occurred!'
+    snackbarType.value = 'error'
+    snackbar.value = true
     console.error('Error saving contact:', error)
   }
 }
 
-
 const deleteContact = async (id) => {
   if (confirm('Are you sure you want to delete this contact?')) {
     try {
-      const response = await contactService.deleteContact(id)
-
-      // Extract and display the message
-      message.value = response.message
-      messageType.value = 'success'
-
+      await contactService.deleteContact(id)
+      snackbarMessage.value = 'Contact deleted!'
+      snackbarType.value = 'success'
+      snackbar.value = true
       await fetchContacts()
     } catch (error) {
-      // Handle errors and display the message
-      if (error.response && error.response.data.message) {
-        message.value = error.response.data.message
-      } else {
-        message.value = 'An error occurred. Please try again.'
-      }
-      messageType.value = 'error'
-
+      snackbarMessage.value = 'An error occurred!'
+      snackbarType.value = 'error'
+      snackbar.value = true
       console.error('Error deleting contact:', error)
     }
   }
 }
-
-
 
 // Lifecycle
 onMounted(() => {

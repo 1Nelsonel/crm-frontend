@@ -1,101 +1,130 @@
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 p-6">
-    <div class="w-full max-w-4xl rounded-xl bg-white p-10 shadow-xl">
-      <h2 class="mb-8 text-center text-4xl font-extrabold text-gray-800">Create an Account</h2>
+  <v-app>
+    <v-main class="bg-primary">
+      <v-container class="fill-height">
+        <v-row justify="center" align="center">
+          <v-col cols="12" sm="10" md="8" lg="6">
+            <v-card class="pa-8" elevation="8" rounded="lg">
+              <v-card-title class="text-h4 font-weight-bold text-center mb-8">
+                Create an Account
+              </v-card-title>
 
-      <form
-        @submit.prevent="handleRegister"
-        class="grid gap-6 sm:grid-cols-1 lg:grid-cols-2"
-      >
-        <div>
-          <label class="block text-sm font-medium text-gray-700">First Name</label>
-          <input
-            v-model="first_name"
-            type="text"
-            required
-            placeholder="Enter your first name"
-            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
+              <v-form @submit.prevent="handleRegister">
+                <v-row>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="first_name"
+                      label="First Name"
+                      placeholder="Enter your first name"
+                      variant="outlined"
+                      required
+                      :disabled="loading"
+                    />
+                  </v-col>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Last Name</label>
-          <input
-            v-model="last_name"
-            type="text"
-            required
-            placeholder="Enter your last name"
-            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="last_name"
+                      label="Last Name"
+                      placeholder="Enter your last name"
+                      variant="outlined"
+                      required
+                      :disabled="loading"
+                    />
+                  </v-col>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Username</label>
-          <input
-            v-model="username"
-            type="text"
-            required
-            placeholder="Choose a username"
-            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="username"
+                      label="Username"
+                      placeholder="Choose a username"
+                      variant="outlined"
+                      required
+                      :disabled="loading"
+                    />
+                  </v-col>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            v-model="email"
-            type="email"
-            required
-            placeholder="Enter your email"
-            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="email"
+                      label="Email"
+                      type="email"
+                      placeholder="Enter your email"
+                      variant="outlined"
+                      required
+                      :disabled="loading"
+                    />
+                  </v-col>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Password</label>
-          <input
-            v-model="password"
-            type="password"
-            required
-            placeholder="Enter a password"
-            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="password"
+                      label="Password"
+                      type="password"
+                      placeholder="Enter a password"
+                      variant="outlined"
+                      required
+                      :disabled="loading"
+                    />
+                  </v-col>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
-          <input
-            v-model="password2"
-            type="password"
-            required
-            placeholder="Confirm your password"
-            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
+                  <v-col cols="12" md="6">
+                    <v-text-field
+                      v-model="password2"
+                      label="Confirm Password"
+                      type="password"
+                      placeholder="Confirm your password"
+                      variant="outlined"
+                      required
+                      :disabled="loading"
+                    />
+                  </v-col>
 
-        <div v-if="error" class="col-span-full rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {{ error }}
-        </div>
+                  <!-- Show all error messages -->
+                  <v-col cols="12" v-if="errors && errors.length">
+                    <v-alert
+                      v-for="(error, index) in errors"
+                      :key="index"
+                      type="error"
+                      variant="tonal"
+                      class="mb-2"
+                    >
+                      {{ error }}
+                    </v-alert>
+                  </v-col>
 
-        <div class="col-span-full">
-          <button
-            type="submit"
-            class="w-full rounded-lg bg-indigo-600 px-5 py-3 text-lg font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-            :disabled="loading"
-          >
-            {{ loading ? 'Registering...' : 'Register' }}
-          </button>
-        </div>
-      </form>
+                  <v-col cols="12">
+                    <v-btn
+                      type="submit"
+                      color="primary"
+                      size="large"
+                      block
+                      :loading="loading"
+                      class="mb-6"
+                    >
+                      {{ loading ? 'Registering...' : 'Register' }}
+                    </v-btn>
+                  </v-col>
+                </v-row>
+              </v-form>
 
-      <p class="mt-6 text-center text-sm text-gray-600">
-        Already have an account?
-        <router-link to="/login" class="font-medium text-indigo-600 hover:text-indigo-800">
-          Login here
-        </router-link>
-      </p>
-    </div>
-  </div>
+              <div class="text-center text-body-2">
+                Already have an account?
+                <v-btn
+                  variant="text"
+                  color="primary"
+                  class="ml-1"
+                  :to="'/login'"
+                >
+                  Login here
+                </v-btn>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
@@ -112,20 +141,19 @@ const username = ref('')
 const email = ref('')
 const password = ref('')
 const password2 = ref('')
-const error = ref('')
+const errors = ref([]) // Store all errors
 const loading = ref(false)
 
 const handleRegister = async () => {
   try {
     if (password.value !== password2.value) {
-      error.value = 'Passwords do not match'
+      errors.value = ['Passwords do not match']
       return
     }
 
     loading.value = true
-    error.value = ''
+    errors.value = []
 
-    // Call the register method
     const { success, error: registerError } = await authStore.register({
       username: username.value,
       email: email.value,
@@ -138,14 +166,19 @@ const handleRegister = async () => {
     if (success) {
       router.push('/dashboard')
     } else {
-      console.log(registerError)
-      error.value = registerError || 'Registration failed'
+      // Collect and show all error messages
+      if (registerError && typeof registerError === 'object') {
+        errors.value = Object.entries(registerError).flatMap(([field, messages]) =>
+          messages.map(message => `${field}: ${message}`)
+        )
+      } else {
+        errors.value = [registerError || 'Registration failed']
+      }
     }
   } catch (err) {
-    error.value = 'An unexpected error occurred during registration'
+    errors.value = ['An unexpected error occurred during registration']
   } finally {
     loading.value = false
   }
 }
-
 </script>

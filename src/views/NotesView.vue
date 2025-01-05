@@ -1,77 +1,129 @@
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <v-app>
     <Navigation />
-    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+
+    <v-container class="py-6">
       <!-- Header -->
-      <div class="px-4 sm:px-0 flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900">Notes</h1>
-        <button @click="openCreateModal" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+      <v-row align="center" justify="space-between" class="mb-6">
+        <v-col>
+          <h1 class="text-h4 font-weight-bold">Notes</h1>
+        </v-col>
+        <v-btn color="primary" @click="openCreateModal" prepend-icon="mdi-plus">
           Add Note
-        </button>
-      </div>
+        </v-btn>
+      </v-row>
 
       <!-- Notes Table -->
-      <div class="mt-8 bg-white shadow rounded-lg">
-        <div class="p-6">
-          <div v-if="loading" class="text-center py-4">Loading...</div>
-          <table v-else class="min-w-full divide-y divide-gray-200">
+      <v-card>
+        <v-card-text>
+          <v-progress-circular
+            v-if="loading"
+            indeterminate
+            color="primary"
+            class="d-flex mx-auto my-4"
+          />
+
+          <v-table v-else>
             <thead>
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lead</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th class="text-left">Lead</th>
+                <th class="text-left">Content</th>
+                <th class="text-left">Created At</th>
+                <th class="text-left">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody>
               <tr v-for="note in notes" :key="note.id">
-                <td class="px-6 py-4 whitespace-nowrap">{{ note.lead.name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ note.content }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ formatDate(note.created_at) }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                  <button @click="editNote(note)" class="text-blue-600 hover:text-blue-900 mr-4">Edit</button>
-                  <button @click="deleteNote(note.id)" class="text-red-600 hover:text-red-900">Delete</button>
+                <td>{{ note.lead?.name || 'No Lead' }}</td>
+                <td>{{ note.content }}</td>
+                <td>{{ formatDate(note.created_at) }}</td>
+                <td>
+                  <v-btn
+                    size="small"
+                    color="primary"
+                    variant="text"
+                    class="mr-2"
+                    @click="editNote(note)"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                  <v-btn
+                    size="small"
+                    color="error"
+                    variant="text"
+                    @click="deleteNote(note.id)"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
                 </td>
               </tr>
             </tbody>
-          </table>
-        </div>
-      </div>
+          </v-table>
+        </v-card-text>
+      </v-card>
 
       <!-- Modal -->
-      <div v-if="showModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full">
-          <h2 class="text-2xl font-bold mb-4">{{ editingNote ? 'Edit Note' : 'Create Note' }}</h2>
-          <form @submit.prevent="handleSubmit" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Lead</label>
-              <select v-model="formData.lead_id" required class="mt-1 block w-full rounded-md border border-gray-300 p-2">
-                <option value="" disabled>Select Lead</option>
-                <option v-for="lead in leads" :key="lead.id" :value="lead.id">{{ lead.name }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Content</label>
-              <textarea
-                v-model="formData.content"
-                required
-                placeholder="Enter note content"
-                class="mt-1 block w-full rounded-md border border-gray-300 p-2"
-              ></textarea>
-            </div>
-            <div class="flex justify-end space-x-4">
-              <button @click="closeModal" type="button" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
-                Cancel
-              </button>
-              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                {{ editingNote ? 'Update' : 'Create' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </main>
-  </div>
+      <v-dialog v-model="showModal" max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="text-h5">{{ editingNote ? 'Edit Note' : 'Create Note' }}</span>
+          </v-card-title>
+
+          <v-card-text>
+            <v-form @submit.prevent="handleSubmit">
+              <v-container>
+                <v-row>
+                  <!-- Lead Field -->
+                  <v-col cols="12">
+                    <v-select
+                      v-model="formData.lead_id"
+                      label="Lead"
+                      :items="leads"
+                      item-text="title"
+                      item-value="value"
+                      variant="outlined"
+                      density="comfortable"
+                      required
+                    />
+                  </v-col>
+
+                  <!-- Content Field -->
+                  <v-col cols="12">
+                    <v-textarea
+                      v-model="formData.content"
+                      label="Content"
+                      outlined
+                      rows="4"
+                      required
+                      density="comfortable"
+                      variant="outlined"
+                    />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-form>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="grey-darken-1"
+              variant="text"
+              @click="closeModal"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="primary"
+              @click="handleSubmit"
+            >
+              {{ editingNote ? 'Update' : 'Create' }}
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-container>
+  </v-app>
 </template>
 
 <script setup>
@@ -113,7 +165,10 @@ const openCreateModal = () => {
 // Open Modal for Edit
 const editNote = (note) => {
   editingNote.value = note
-  formData.value = { lead_id: note.lead.id, content: note.content }
+  formData.value = {
+    lead_id: note.lead?.id || null,
+    content: note.content
+  }
   showModal.value = true
 }
 

@@ -1,59 +1,74 @@
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 p-6">
-    <div class="w-full max-w-sm md:max-w-md lg:max-w-lg rounded-xl bg-white p-12 shadow-xl">
-      <h2 class="mb-8 text-center text-4xl font-extrabold text-gray-800">
-        Login to CRM
-      </h2>
+  <v-app>
+    <v-main class="bg-primary">
+      <v-container class="fill-height">
+        <v-row justify="center" align="center">
+          <v-col cols="12" sm="8" md="6" lg="4">
+            <v-card class="pa-8" elevation="8" rounded="lg">
+              <v-card-title class="text-h4 font-weight-bold text-center mb-8">
+                Login to CRM
+              </v-card-title>
 
-      <form @submit.prevent="handleLogin" class="space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Username</label>
-          <input
-            v-model="username"
-            type="text"
-            required
-            placeholder="Enter your username"
-            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
+              <v-form @submit.prevent="handleLogin">
+                <v-text-field
+                  v-model="username"
+                  label="Username"
+                  placeholder="Enter your username"
+                  variant="outlined"
+                  required
+                  :disabled="loading"
+                  class="mb-4"
+                />
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Password</label>
-          <input
-            v-model="password"
-            type="password"
-            required
-            placeholder="Enter your password"
-            class="mt-1 block w-full rounded-lg border border-gray-300 bg-gray-50 p-3 text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
-        </div>
+                <v-text-field
+                  v-model="password"
+                  label="Password"
+                  type="password"
+                  placeholder="Enter your password"
+                  variant="outlined"
+                  required
+                  :disabled="loading"
+                  class="mb-4"
+                />
 
-        <!-- Error message -->
-        <div
-          v-if="error"
-          class="rounded-md bg-red-50 p-3 text-sm text-red-600"
-          aria-live="polite"
-        >
-          {{ error }}
-        </div>
+                <v-alert
+                  v-if="error"
+                  type="error"
+                  variant="tonal"
+                  class="mb-4"
+                >
+                  {{ error }}
+                </v-alert>
 
-        <button
-          type="submit"
-          class="w-full rounded-lg bg-indigo-600 px-5 py-3 text-lg font-semibold text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-          :disabled="loading"
-        >
-          {{ loading ? 'Logging in...' : 'Login' }}
-        </button>
-      </form>
+                <v-btn
+                  type="submit"
+                  color="primary"
+                  size="large"
+                  block
+                  :loading="loading"
+                  class="mb-6"
+                >
+                  {{ loading ? 'Logging in...' : 'Login' }}
+                </v-btn>
+              </v-form>
 
-      <p class="mt-8 text-center text-sm text-gray-600">
-        Don't have an account?
-        <router-link to="/register" class="font-medium text-indigo-600 hover:text-indigo-800">
-          Register here
-        </router-link>
-      </p>
-    </div>
-  </div>
+              <div class="text-center text-body-2">
+                Don't have an account?
+                <v-btn
+                  variant="text"
+                  color="primary"
+                  class="ml-1"
+                  :to="'/register'"
+                >
+                  Register here
+                </v-btn>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
@@ -63,7 +78,6 @@ import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
-
 const username = ref('')
 const password = ref('')
 const error = ref('')
@@ -73,7 +87,6 @@ const handleLogin = async () => {
   try {
     loading.value = true
     error.value = ''
-
     const { success, error: serverError } = await authStore.login(username.value, password.value)
     if (success) {
       router.push('/dashboard')

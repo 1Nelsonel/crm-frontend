@@ -1,22 +1,24 @@
+import api from './apiService'
+
 export const remindersService = {
   async getReminders(leadId) {
     try {
-      const response = await api.get(`/leads/${leadId}/reminders/`)
+      const response = await api.get('/reminders/')
       return Array.isArray(response.data) ? response.data : response.data.data || []
     } catch (error) {
       console.error("Error in getReminders:", error)
       throw error
     }
   },
-  async createReminder(leadId, reminderData) {
-    const response = await api.post(`/leads/${leadId}/reminders/`, reminderData)
+  async createReminder(reminderData) {
+    const response = await api.post('/reminders/', reminderData)
     return response.data
   },
-  async updateReminder(leadId, reminderId, reminderData) {
-    const response = await api.put(`/leads/${leadId}/reminders/${reminderId}/`, reminderData)
+  async updateReminder(reminderId, reminderData) {
+    const response = await api.put(`/reminders/${reminderId}/`, reminderData)
     return response.data
   },
-  async deleteReminder(leadId, reminderId) {
-    await api.delete(`/leads/${leadId}/reminders/${reminderId}/`)
+  async deleteReminder(reminderId) {
+    await api.delete(`/reminders/${reminderId}/`)
   }
 }
