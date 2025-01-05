@@ -1,61 +1,133 @@
 <template>
-  <nav class="bg-gray-800 text-white">
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="flex items-center justify-between h-16">
+  <v-app-bar color="grey-darken-4">
+    <v-container class="px-4">
+      <div class="d-flex align-center w-100">
         <!-- Logo -->
-        <div class="flex-shrink-0">
-          <router-link to="/dashboard" class="text-xl font-bold">
-            Mini CRM
-          </router-link>
-        </div>
+        <router-link
+          to="/dashboard"
+          class="text-h6 font-weight-bold text-white text-decoration-none"
+        >
+          Mini CRM
+        </router-link>
+        <v-spacer></v-spacer>
 
-        <!-- Navigation Links -->
-        <div class="hidden md:block">
-          <div class="ml-10 flex items-center space-x-4">
-            <router-link
+        <!-- Desktop Navigation -->
+        <div class="d-none d-md-block">
+          <v-tabs
+            v-model="activeTab"
+            color="white"
+            class="ml-4"
+          >
+            <v-tab
               v-for="item in navigationItems"
               :key="item.path"
               :to="item.path"
-              class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700"
-              :class="{ 'bg-gray-900': isCurrentPath(item.path) }"
+              :value="item.path"
+              class="text-white"
             >
               {{ item.name }}
-            </router-link>
-          </div>
+            </v-tab>
+          </v-tabs>
         </div>
 
-        <!-- User Menu -->
-        <div class="flex items-center">
-          <div class="ml-3 relative">
-            <button
-              @click="toggleUserMenu"
-              class="flex items-center space-x-2 text-sm rounded-full focus:outline-none"
+        <!-- Desktop User Menu -->
+        <v-menu location="bottom end" class="d-none d-md-block">
+          <template v-slot:activator="{ props }">
+            <v-btn
+              color="transparent"
+              v-bind="props"
+              class="text-white ml-4"
             >
-              <span>{{ username }}</span>
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+              <v-avatar size="32" color="primary" class="mr-2">
+                <span class="text-caption">{{ userInitials }}</span>
+              </v-avatar>
+              <span class="mr-2 text-subtitle-2">{{ authStore.user?.username }}</span>
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-btn>
+          </template>
+          <v-list min-width="200">
+            <v-list-item>
+              <v-list-item-title class="text-subtitle-2 font-weight-bold">
+                {{ authStore.user?.username }}
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                {{ authStore.user?.email || 'user@example.com' }}
+              </v-list-item-subtitle>
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-list-item @click="handleLogout" color="error">
+              <template v-slot:prepend>
+                <v-icon color="error">mdi-logout</v-icon>
+              </template>
+              <v-list-item-title class="text-error">Logout</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
 
-            <!-- Dropdown Menu -->
-            <div
-              v-if="showUserMenu"
-              class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
-            >
-              <div class="py-1">
-                <button
-                  @click="handleLogout"
-                  class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- Mobile Menu Button -->
+        <v-app-bar-nav-icon
+          class="d-md-none text-white ml-4"
+          @click="drawer = !drawer"
+        ></v-app-bar-nav-icon>
       </div>
-    </div>
-  </nav>
+    </v-container>
+  </v-app-bar>
+
+  <!-- Mobile Navigation Drawer -->
+  <v-navigation-drawer
+    v-model="drawer"
+    location="right"
+    temporary
+    class="bg-grey-darken-4"
+  >
+    <!-- User Profile Section in Drawer -->
+    <v-list class="pa-4">
+      <v-list-item class="mb-4">
+        <v-avatar size="48" color="primary" class="mb-2">
+          <span class="text-h6">{{ userInitials }}</span>
+        </v-avatar>
+        <v-list-item-title class="text-white text-h6 mt-2">
+          {{ authStore.user?.username }}
+        </v-list-item-title>
+        <v-list-item-subtitle class="text-grey">
+          {{ authStore.user?.email || 'user@example.com' }}
+        </v-list-item-subtitle>
+      </v-list-item>
+      <v-divider class="mb-4"></v-divider>
+    </v-list>
+
+    <!-- Navigation Items -->
+    <v-list nav class="pa-2">
+      <v-list-item
+        v-for="item in navigationItems"
+        :key="item.path"
+        :to="item.path"
+        :value="item.path"
+        color="white"
+        class="mb-2"
+      >
+        <v-list-item-title class="text-white">
+          {{ item.name }}
+        </v-list-item-title>
+      </v-list-item>
+    </v-list>
+
+    <!-- Logout Button at Bottom -->
+    <template v-slot:append>
+      <div class="pa-4">
+        <v-btn
+          block
+          color="error"
+          variant="tonal"
+          @click="handleLogout"
+          class="mb-4"
+        >
+          <v-icon start>mdi-logout</v-icon>
+          Logout
+        </v-btn>
+      </div>
+    </template>
+  </v-navigation-drawer>
 </template>
 
 <script setup>
@@ -66,9 +138,19 @@ import { useAuthStore } from '@/stores/auth'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const activeTab = ref(route.path)
+const drawer = ref(false)
 
-const showUserMenu = ref(false)
-const username = computed(() => authStore.user?.name || 'User')
+const username = computed(() => authStore.user?.username || 'User')
+const userInitials = computed(() => {
+  const name = authStore.user?.username || 'User'
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+})
 
 const navigationItems = [
   { name: 'Dashboard', path: '/dashboard' },
@@ -78,14 +160,19 @@ const navigationItems = [
   { name: 'Reminders', path: '/reminders' }
 ]
 
-const isCurrentPath = (path) => route.path === path
-
-const toggleUserMenu = () => {
-  showUserMenu.value = !showUserMenu.value
-}
-
 const handleLogout = async () => {
-  authStore.logout()
+  await authStore.logout()
   router.push('/login')
+  drawer.value = false
 }
 </script>
+
+<style scoped>
+:deep(.v-tab) {
+  text-transform: none;
+}
+
+:deep(.v-list-item--active) {
+  background: rgba(5, 5, 5, 0.1);
+}
+</style>
